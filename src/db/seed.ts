@@ -57,7 +57,7 @@ const seedDatabase = async () => {
 
     // Insert initial data into the 'material_types' table
     await pool.query(`
-      INSERT INTO "material_types" (type, description)
+      INSERT INTO "material_types" (name, description)
       VALUES 
         ('Furniture', 'Materials used for furniture construction'),
         ('Flooring', 'Materials used for flooring surfaces'),
@@ -67,30 +67,61 @@ const seedDatabase = async () => {
 
     // Insert initial data into the 'materials' table
     await pool.query(`
-        INSERT INTO "materials" (type, name, texture_url)
-        VALUES 
-          -- Furniture
-          ('Furniture', 'Pine Wood', 'https://example.com/pine_texture'),
-          ('Furniture', 'Leather', 'https://example.com/leather_texture'),
-          ('Furniture', 'Velvet Fabric', 'https://example.com/velvet_texture'),
-          ('Furniture', 'Metal Frame', 'https://example.com/metal_frame_texture'),
+      INSERT INTO "materials" (type_id, name, img_url)
+      VALUES 
+        -- Furniture
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), 'Pine Wood', 'https://example.com/pine_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), 'Leather', 'https://example.com/leather_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), 'Velvet Fabric', 'https://example.com/velvet_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), 'Metal Frame', 'https://example.com/metal_frame_texture'),
       
-          -- Flooring
-          ('Flooring', 'Marble', 'https://example.com/marble_texture'),
-          ('Flooring', 'Laminate', 'https://example.com/laminate_texture'),
-          ('Flooring', 'Tiles', 'https://example.com/tiles_texture'),
+        -- Flooring
+        ((SELECT id FROM material_types WHERE name = 'Flooring'), 'Marble', 'https://example.com/marble_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Flooring'), 'Laminate', 'https://example.com/laminate_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Flooring'), 'Tiles', 'https://example.com/tiles_texture'),
       
-          -- Window
-          ('Window', 'Clear Glass', 'https://example.com/clear_glass_texture'),
-          ('Window', 'Aluminum Frame', 'https://example.com/aluminum_frame_texture'),
+        -- Window
+        ((SELECT id FROM material_types WHERE name = 'Window'), 'Clear Glass', 'https://example.com/clear_glass_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Window'), 'Aluminum Frame', 'https://example.com/aluminum_frame_texture'),
       
-          -- Door
-          ('Door', 'Solid Wood', 'https://example.com/solid_wood_texture'),
-          ('Door', 'Steel', 'https://example.com/steel_texture'),
-          ('Door', 'Glass Panel', 'https://example.com/glass_panel_texture'),
-          ('Door', 'Composite', 'https://example.com/composite_texture')
-        ON CONFLICT DO NOTHING;
-      `);
+        -- Door
+        ((SELECT id FROM material_types WHERE name = 'Door'), 'Solid Wood', 'https://example.com/solid_wood_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Door'), 'Steel', 'https://example.com/steel_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Door'), 'Glass Panel', 'https://example.com/glass_panel_texture'),
+        ((SELECT id FROM material_types WHERE name = 'Door'), 'Composite', 'https://example.com/composite_texture')
+      ON CONFLICT DO NOTHING;
+    `);
+
+    // Insert initial data into the 'categories' table
+    await pool.query(`
+      INSERT INTO categories (type_id, parent_id, name)
+      VALUES 
+        -- Furniture categories
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), NULL, '按房間類別'),
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), NULL, '按家具類別'),
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), (SELECT id FROM categories WHERE name = '按房間類別'), '客廳'),
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), (SELECT id FROM categories WHERE name = '按房間類別'), '房間'),
+        ((SELECT id FROM material_types WHERE name = 'Furniture'), (SELECT id FROM categories WHERE name = '按家具類別'), '沙發'),
+            
+        -- Flooring categories
+        ((SELECT id FROM material_types WHERE name = 'Flooring'), NULL, 'Wood'),
+        ((SELECT id FROM material_types WHERE name = 'Flooring'), NULL, 'Tiles');
+    `);
+
+    // Insert initial data into the 'material_categories' table
+    await pool.query(`
+      INSERT INTO material_categories (material_id, category_id)
+      VALUES 
+        -- Furniture associations
+        ((SELECT id FROM materials WHERE name = 'Pine Wood'), (SELECT id FROM categories WHERE name = '客廳')),
+        ((SELECT id FROM materials WHERE name = 'Pine Wood'), (SELECT id FROM categories WHERE name = '沙發')),
+        ((SELECT id FROM materials WHERE name = 'Leather'), (SELECT id FROM categories WHERE name = '沙發')),
+        ((SELECT id FROM materials WHERE name = 'Metal Frame'), (SELECT id FROM categories WHERE name = '房間')),
+          
+        -- Flooring associations
+        ((SELECT id FROM materials WHERE name = 'Marble'), (SELECT id FROM categories WHERE name = 'Tiles')),
+        ((SELECT id FROM materials WHERE name = 'Tiles'), (SELECT id FROM categories WHERE name = 'Tiles'));
+    `);
 
     console.log("Database seeded successfully!");
   } catch (err) {
