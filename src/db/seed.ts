@@ -82,10 +82,10 @@ const seedDatabase = async () => {
     await pool.query(`
       INSERT INTO "material_types" (name, description)
       VALUES
-        ('Furniture', 'Materials used for furniture construction'),
-        ('Flooring', 'Materials used for flooring surfaces'),
-        ('Window', 'Materials used for window frames and coverings'),
-        ('Door', 'Materials used for doors and door frames');
+        ('furniture', 'Materials used for furniture construction'),
+        ('flooring', 'Materials used for flooring surfaces'),
+        ('window', 'Materials used for window frames and coverings'),
+        ('door', 'Materials used for doors and door frames');
     `);
     console.log("Seeded material_types successfully.");
 
@@ -93,26 +93,26 @@ const seedDatabase = async () => {
     await pool.query(`
       INSERT INTO "materials" (type_id, name, img_url)
       VALUES
-        -- Furniture
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), 'Pine Wood', 'https://example.com/pine_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), 'Leather', 'https://example.com/leather_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), 'Velvet Fabric', 'https://example.com/velvet_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), 'Metal Frame', 'https://example.com/metal_frame_texture'),
+        -- furniture
+        ((SELECT id FROM material_types WHERE name = 'furniture'), 'Pine Wood', 'https://example.com/pine_texture'),
+        ((SELECT id FROM material_types WHERE name = 'furniture'), 'Leather', 'https://example.com/leather_texture'),
+        ((SELECT id FROM material_types WHERE name = 'furniture'), 'Velvet Fabric', 'https://example.com/velvet_texture'),
+        ((SELECT id FROM material_types WHERE name = 'furniture'), 'Metal Frame', 'https://example.com/metal_frame_texture'),
 
-        -- Flooring
-        ((SELECT id FROM material_types WHERE name = 'Flooring'), 'Marble', 'https://example.com/marble_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Flooring'), 'Laminate', 'https://example.com/laminate_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Flooring'), 'Tiles', 'https://example.com/tiles_texture'),
+        -- flooring
+        ((SELECT id FROM material_types WHERE name = 'flooring'), 'Marble', 'https://example.com/marble_texture'),
+        ((SELECT id FROM material_types WHERE name = 'flooring'), 'Laminate', 'https://example.com/laminate_texture'),
+        ((SELECT id FROM material_types WHERE name = 'flooring'), 'Tiles', 'https://example.com/tiles_texture'),
 
-        -- Window
-        ((SELECT id FROM material_types WHERE name = 'Window'), 'Clear Glass', 'https://example.com/clear_glass_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Window'), 'Aluminum Frame', 'https://example.com/aluminum_frame_texture'),
+        -- window
+        ((SELECT id FROM material_types WHERE name = 'window'), 'Clear Glass', 'https://example.com/clear_glass_texture'),
+        ((SELECT id FROM material_types WHERE name = 'window'), 'Aluminum Frame', 'https://example.com/aluminum_frame_texture'),
 
-        -- Door
-        ((SELECT id FROM material_types WHERE name = 'Door'), 'Solid Wood', 'https://example.com/solid_wood_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Door'), 'Steel', 'https://example.com/steel_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Door'), 'Glass Panel', 'https://example.com/glass_panel_texture'),
-        ((SELECT id FROM material_types WHERE name = 'Door'), 'Composite', 'https://example.com/composite_texture')
+        -- door
+        ((SELECT id FROM material_types WHERE name = 'door'), 'Solid Wood', 'https://example.com/solid_wood_texture'),
+        ((SELECT id FROM material_types WHERE name = 'door'), 'Steel', 'https://example.com/steel_texture'),
+        ((SELECT id FROM material_types WHERE name = 'door'), 'Glass Panel', 'https://example.com/glass_panel_texture'),
+        ((SELECT id FROM material_types WHERE name = 'door'), 'Composite', 'https://example.com/composite_texture')
       ON CONFLICT DO NOTHING;
     `);
     console.log("Seeded materials successfully.");
@@ -121,21 +121,21 @@ const seedDatabase = async () => {
     await pool.query(`
       INSERT INTO categories (type_id, parent_id, name)
       VALUES
-        -- Furniture categories
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), NULL, '按房間類別'),
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), NULL, '按家具類別'),
+        -- furniture categories
+        ((SELECT id FROM material_types WHERE name = 'furniture'), NULL, '按房間類別'),
+        ((SELECT id FROM material_types WHERE name = 'furniture'), NULL, '按家具類別'),
 
-        -- Flooring categories
-        ((SELECT id FROM material_types WHERE name = 'Flooring'), NULL, 'Wood'),
-        ((SELECT id FROM material_types WHERE name = 'Flooring'), NULL, 'Tiles');
+        -- flooring categories
+        ((SELECT id FROM material_types WHERE name = 'flooring'), NULL, 'Wood'),
+        ((SELECT id FROM material_types WHERE name = 'flooring'), NULL, 'Tiles');
     `);
     await pool.query(`
       INSERT INTO categories (type_id, parent_id, name)
       VALUES 
-        -- Furniture categories
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), (SELECT id FROM categories WHERE name = '按房間類別'), '客廳'),
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), (SELECT id FROM categories WHERE name = '按房間類別'), '房間'),
-        ((SELECT id FROM material_types WHERE name = 'Furniture'), (SELECT id FROM categories WHERE name = '按家具類別'), '沙發')
+        -- furniture categories
+        ((SELECT id FROM material_types WHERE name = 'furniture'), (SELECT id FROM categories WHERE name = '按房間類別'), '客廳'),
+        ((SELECT id FROM material_types WHERE name = 'furniture'), (SELECT id FROM categories WHERE name = '按房間類別'), '房間'),
+        ((SELECT id FROM material_types WHERE name = 'furniture'), (SELECT id FROM categories WHERE name = '按家具類別'), '沙發')
     `);
     console.log("Seeded categories successfully.");
 
