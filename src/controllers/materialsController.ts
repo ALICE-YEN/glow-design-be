@@ -6,18 +6,13 @@ import {
   getMaterialTypesQuery,
   getMaterialsByTypeQuery,
   getCategoriesByTypeQuery,
+  getCategoryMaterialsQuery,
+  getCategoryWithSubcategoriesMaterialsQuery,
 } from "../queries/materialQueries";
-
-interface Category {
-  id: number;
-  type_id: number;
-  parent_id?: number | null;
-  name: string;
-}
-
-interface ParentCategory extends Category {
-  categories: ParentCategory[];
-}
+import {
+  organizeCategories,
+  organizeMaterialsAndCategories,
+} from "../services/categoryService";
 
 export const getMaterialList: RequestHandler = async (
   req: Request,
@@ -81,27 +76,37 @@ export const getCategoriesByType: RequestHandler = async (
 
     const result = await pool.query(getCategoriesByTypeQuery, [materialTypeId]);
 
-    const organizeCategories = (categories: Category[]): ParentCategory[] => {
-      const categoryMap = new Map<number, ParentCategory>();
-
-      categories.forEach((cat: Category) => {
-        categoryMap.set(cat.id, { ...cat, categories: [] });
-      });
-
-      categories.forEach((cat) => {
-        if (cat.parent_id && categoryMap.has(cat.parent_id)) {
-          categoryMap
-            .get(cat.parent_id)
-            ?.categories.push(categoryMap.get(cat.id)!);
-        }
-      });
-
-      return [...categoryMap.values()].filter((cat) => !cat.parent_id);
-    };
-
     const organizedCategories = organizeCategories(result.rows);
 
     res.status(200).json(organizedCategories);
+  } catch (error) {
+    // Pass all other errors to errorMiddleware for centralized handling
+    next(error);
+  }
+};
+
+export const getMaterialsByCategory: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { categoryId } = req.params;
+  const includeSubcategories = req.query.includeSubcategories === "true";
+
+  try {
+    if (!categoryId || isNaN(Number(categoryId))) {
+      return next(new AppError("ERR_MISSING_FIELDS", 400));
+    }
+
+    const query = includeSubcategories
+      ? getCategoryWithSubcategoriesMaterialsQuery
+      : getCategoryMaterialsQuery;
+
+    const result = await pool.query(query, [categoryId]);
+
+    const organizedData = organizeMaterialsAndCategories(result.rows);
+
+    res.status(200).json({ data: organizedData, count: result.rowCount });
   } catch (error) {
     // Pass all other errors to errorMiddleware for centralized handling
     next(error);

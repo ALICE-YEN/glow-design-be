@@ -8,6 +8,7 @@ import {
   getMaterialTypes,
   getMaterialsByType,
   getCategoriesByType,
+  getMaterialsByCategory,
 } from "../controllers/materialsController";
 
 const router = Router();
@@ -16,6 +17,6 @@ router.get("/", getMaterialList); // 待確定不需要再刪除
 router.get("/material-types", getMaterialTypes);
 router.get("/material-types/:materialTypeId", getMaterialsByType);
 router.get("/material-types/:materialTypeId/categories", getCategoriesByType);
-// router.get("/categories/:categoryId/materials", getMaterialsByCategory);
+router.get("/categories/:categoryId", getMaterialsByCategory);
 
 export default router;

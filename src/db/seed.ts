@@ -144,14 +144,34 @@ const seedDatabase = async () => {
       INSERT INTO material_categories (material_id, category_id)
       VALUES
         -- Furniture associations
-        ((SELECT id FROM materials WHERE name = 'Pine Wood'), (SELECT id FROM categories WHERE name = 'Wood')),
-        ((SELECT id FROM materials WHERE name = 'Pine Wood'), (SELECT id FROM categories WHERE name = '按家具類別')),
-        ((SELECT id FROM materials WHERE name = 'Leather'), (SELECT id FROM categories WHERE name = '按家具類別')),
-        ((SELECT id FROM materials WHERE name = 'Metal Frame'), (SELECT id FROM categories WHERE name = '按房間類別')),
+        ((SELECT id FROM materials WHERE name = 'Pine Wood'), 
+         (SELECT id FROM categories WHERE name = '客廳')), -- 按房間類別 -> 客廳
+        ((SELECT id FROM materials WHERE name = 'Pine Wood'), 
+         (SELECT id FROM categories WHERE name = '沙發')), -- 按家具類別 -> 沙發
+        ((SELECT id FROM materials WHERE name = 'Pine Wood'), 
+         (SELECT id FROM categories WHERE name = '房間')), -- 按房間類別 -> 房間
+        ((SELECT id FROM materials WHERE name = 'Pine Wood'), 
+         (SELECT id FROM categories WHERE name = '按房間類別')), -- 按房間類別
+
+        ((SELECT id FROM materials WHERE name = 'Leather'), 
+         (SELECT id FROM categories WHERE name = '客廳')), -- 按房間類別 -> 客廳
+        ((SELECT id FROM materials WHERE name = 'Leather'), 
+         (SELECT id FROM categories WHERE name = '沙發')), -- 按家具類別 -> 沙發
+
+        ((SELECT id FROM materials WHERE name = 'Metal Frame'), 
+         (SELECT id FROM categories WHERE name = '客廳')), -- 按房間類別 -> 客廳
+        ((SELECT id FROM materials WHERE name = 'Metal Frame'), 
+         (SELECT id FROM categories WHERE name = '沙發')), -- 按家具類別 -> 沙發
+        ((SELECT id FROM materials WHERE name = 'Metal Frame'), 
+         (SELECT id FROM categories WHERE name = '房間')), -- 按房間類別 -> 房間
 
         -- Flooring associations
-        ((SELECT id FROM materials WHERE name = 'Marble'), (SELECT id FROM categories WHERE name = 'Tiles')),
-        ((SELECT id FROM materials WHERE name = 'Tiles'), (SELECT id FROM categories WHERE name = 'Tiles'));
+        ((SELECT id FROM materials WHERE name = 'Marble'), 
+         (SELECT id FROM categories WHERE name = 'Tiles')),
+        ((SELECT id FROM materials WHERE name = 'Laminate'), 
+         (SELECT id FROM categories WHERE name = 'Wood')),
+        ((SELECT id FROM materials WHERE name = 'Tiles'), 
+         (SELECT id FROM categories WHERE name = 'Tiles'));
     `);
     console.log("Seeded material_categories successfully.");
 

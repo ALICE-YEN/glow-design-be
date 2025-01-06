@@ -24,3 +24,35 @@ SELECT c.id, c.type_id, c.parent_id, c.name
 FROM categories c
 WHERE c.type_id = $1
 `;
+
+export const getCategoryMaterialsQuery = `
+SELECT c.id AS category_id, c.name AS category_name, c.parent_id AS category_parent_id, c.type_id, m.id AS material_id, m.name AS material_name, m.img_url AS material_img_url
+FROM categories c
+LEFT JOIN material_categories mc ON c.id = mc.category_id
+LEFT JOIN materials m ON mc.material_id = m.id
+WHERE c.id = $1
+`;
+
+export const getCategoryWithSubcategoriesMaterialsQuery = `
+WITH RECURSIVE category_tree AS (
+  SELECT id, type_id, parent_id, name
+  FROM categories
+  WHERE id = $1 -- API 傳入的 categoryId
+  UNION ALL
+  SELECT c.id, c.type_id, c.parent_id, c.name
+  FROM categories c
+  INNER JOIN category_tree ct ON c.parent_id = ct.id
+)
+SELECT 
+  ct.id AS category_id,
+  ct.name AS category_name,
+  ct.parent_id AS category_parent_id,
+  ct.type_id,
+  m.id AS material_id,
+  m.name AS material_name,
+  m.img_url AS material_img_url
+FROM category_tree ct
+LEFT JOIN material_categories mc ON ct.id = mc.category_id
+LEFT JOIN materials m ON mc.material_id = m.id
+ORDER BY ct.id;
+`;
