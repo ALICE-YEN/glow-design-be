@@ -106,7 +106,7 @@ export const getMaterialsByCategory: RequestHandler = async (
 
     const organizedData = organizeMaterialsAndCategories(result.rows);
 
-    res.status(200).json({ data: organizedData, count: result.rowCount });
+    res.status(200).json(organizedData);
   } catch (error) {
     // Pass all other errors to errorMiddleware for centralized handling
     next(error);

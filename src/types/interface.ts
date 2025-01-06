@@ -12,7 +12,7 @@ export interface Material {
 }
 
 export interface ParentCategory extends Category {
-  categories: ParentCategory[];
+  subcategories: ParentCategory[];
 }
 
 export interface CategoryMaterialSQL {

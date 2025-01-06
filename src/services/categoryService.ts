@@ -11,12 +11,14 @@ export const organizeCategories = (
   const categoryMap = new Map<number, ParentCategory>();
 
   categories.forEach((cat: Category) => {
-    categoryMap.set(cat.id, { ...cat, categories: [] });
+    categoryMap.set(cat.id, { ...cat, subcategories: [] });
   });
 
   categories.forEach((cat) => {
     if (cat.parent_id && categoryMap.has(cat.parent_id)) {
-      categoryMap.get(cat.parent_id)?.categories.push(categoryMap.get(cat.id)!);
+      categoryMap
+        .get(cat.parent_id)
+        ?.subcategories.push(categoryMap.get(cat.id)!);
     }
   });
 
