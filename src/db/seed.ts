@@ -23,7 +23,7 @@ const seedDatabase = async () => {
     await pool.query(`
       INSERT INTO "users" (username, email, password, sso_id, phone, status)
       VALUES
-        ('Glow Design TEST', 'test@glow-design.com', 'GlowDesign1', NULL, NULL, 'active'),
+        ('Glow Design TEST', 'test@glow-design.com', '$2a$10$wnze.MvkJVAPqv.MyFnkp.Wr.lCWyrK8PRCn.updsYyTwaL42Z0fG', NULL, NULL, 'active'),
         ('John Doe', 'john@example.com', 'hashedpassword1', NULL, '1234567890', 'active'),
         ('Jane Smith', 'jane@example.com', 'hashedpassword2', NULL, '9876543210', 'inactive');
     `);
