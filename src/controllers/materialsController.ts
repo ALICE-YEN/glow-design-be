@@ -37,7 +37,6 @@ export const getMaterialTypes: RequestHandler = async (
     const result = await pool.query(getMaterialTypesQuery);
     res.status(200).json(result.rows);
   } catch (error) {
-    // Pass all other errors to errorMiddleware for centralized handling
     next(error);
   }
 };
@@ -57,7 +56,6 @@ export const getMaterialsByType: RequestHandler = async (
     const result = await pool.query(getMaterialsByTypeQuery, [materialTypeId]);
     res.status(200).json({ data: result.rows, count: result.rowCount });
   } catch (error) {
-    // Pass all other errors to errorMiddleware for centralized handling
     next(error);
   }
 };
@@ -80,7 +78,6 @@ export const getCategoriesByType: RequestHandler = async (
 
     res.status(200).json(organizedCategories);
   } catch (error) {
-    // Pass all other errors to errorMiddleware for centralized handling
     next(error);
   }
 };
@@ -91,7 +88,7 @@ export const getMaterialsByCategory: RequestHandler = async (
   next: NextFunction
 ) => {
   const { categoryId } = req.params;
-  const includeSubcategories = req.query.includeSubcategories === "true";
+  const includeSubcategories = req.query.include_subcategories === "true";
 
   try {
     if (!categoryId || isNaN(Number(categoryId))) {
@@ -108,7 +105,6 @@ export const getMaterialsByCategory: RequestHandler = async (
 
     res.status(200).json(organizedData);
   } catch (error) {
-    // Pass all other errors to errorMiddleware for centralized handling
     next(error);
   }
 };

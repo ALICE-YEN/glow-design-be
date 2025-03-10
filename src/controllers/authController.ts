@@ -78,8 +78,15 @@ export const login: RequestHandler = async (
       expiresIn: "1h", // Token expiration time
     });
 
+    const refreshToken = jwt.sign(
+      { id: user.id, email: user.email },
+      secretKey,
+      { expiresIn: "7d" } // Refresh Token 有效 7 天
+    );
+
     res.status(200).json({
       token,
+      refreshToken,
       id: user.id,
       username: user.username,
       email: user.email,
@@ -123,11 +130,18 @@ export const googleSsoHandler: RequestHandler = async (
     }
     // Generate a JWT token
     const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
-      expiresIn: "1h", // Token expiration time
+      expiresIn: "1h",
     });
+
+    const refreshToken = jwt.sign(
+      { id: user.id, email: user.email },
+      secretKey,
+      { expiresIn: "7d" } // Refresh Token 有效 7 天
+    );
 
     res.status(200).json({
       token,
+      refreshToken,
       id: user.id,
       username: user.username,
       email: user.email,
@@ -136,3 +150,9 @@ export const googleSsoHandler: RequestHandler = async (
     next(error);
   }
 };
+
+export const refreshToken: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {};
