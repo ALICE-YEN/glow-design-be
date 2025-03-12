@@ -12,7 +12,7 @@ import {
 import {
   organizeCategories,
   organizeMaterialsAndCategories,
-} from "../services/categoryService";
+} from "../services/materials/categoryService";
 
 export const getMaterialList: RequestHandler = async (
   req: Request,

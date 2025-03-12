@@ -3,6 +3,10 @@ export const errorMap = {
     status: 400,
     message: "All fields are required",
   },
+  ERR_NO_UPDATE_FIELDS: {
+    status: 400,
+    message: "No field to update",
+  },
   ERR_EMAIL_EXISTS: {
     status: 400,
     message: "Email already exists",

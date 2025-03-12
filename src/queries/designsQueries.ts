@@ -19,3 +19,9 @@ INSERT INTO designs (name, description, data, created_by)
 VALUES ($1, $2, $3, $4)
 RETURNING id, name, description, data, created_by, created_at, updated_at;
 `;
+
+export const softDeleteDesignQuery = `
+UPDATE designs
+SET is_deleted = true, updated_at = NOW()
+WHERE id = $1
+RETURNING id, name, description, data, created_by, is_deleted, created_at, updated_at;`;
