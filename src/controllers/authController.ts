@@ -21,10 +21,6 @@ export const register: RequestHandler = async (
   const { username, email, password } = req.body;
 
   try {
-    if (!username || !email || !password) {
-      throw new AppError("ERR_MISSING_FIELDS", 400);
-    }
-
     // TODO: REDIS - Caching User Data for Fast Lookups、Redis can act as a fast lock to prevent duplicates during High Concurrency
     // Check if the email already exists
     const emailExists = await pool.query(checkEmailQuery, [email]);
@@ -58,9 +54,6 @@ export const login: RequestHandler = async (
   const { email, password } = req.body;
 
   try {
-    if (!email || !password) {
-      throw new AppError("ERR_MISSING_FIELDS", 400);
-    }
     const result = await pool.query(loginQuery, [email]);
     if (result.rowCount === 0) {
       throw new AppError("ERR_INVALID_CREDENTIALS", 401);
@@ -104,10 +97,6 @@ export const googleSsoHandler: RequestHandler = async (
   const { username, email, ssoId } = req.body;
 
   try {
-    if (!username || !email || !ssoId) {
-      throw new AppError("ERR_MISSING_FIELDS", 400);
-    }
-
     // Check if the user already exists in the database
     const result = await pool.query(findUserBySsoOrEmailQuery, [ssoId, email]);
     let user = result.rows[0];
