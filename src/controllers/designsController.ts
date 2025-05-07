@@ -4,6 +4,7 @@ import { AppError } from "../utils/AppError";
 import { parseSortParams } from "../services/designs/parseSortParams";
 import { generateUpdateDesignQuery } from "../services/designs/generateUpdateQuery";
 import {
+  getDesignQuery,
   checkUserQuery,
   getDesignsByUserQuery,
   createDesignQuery,
@@ -15,9 +16,14 @@ export const getDesign: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
+  const designId = req.params.designId as unknown as number;
+
   try {
-    // validateDesignId 與 validateDesignExists middleware 已經處理過 designId 驗證
-    res.status(200).json((req as any).design);
+    const result = await pool.query(getDesignQuery, [designId]);
+    if (result.rowCount === 0) {
+      return next(new AppError("ERR_RESOURCE_NOT_FOUND", 404));
+    }
+    res.status(200).json(result.rows[0]);
   } catch (error) {
     next(error);
   }
@@ -73,10 +79,6 @@ export const createDesign: RequestHandler = async (
 
   const { name, description, data } = req.body;
 
-  if (!name || !description || !data) {
-    return next(new AppError("ERR_MISSING_FIELDS", 400));
-  }
-
   try {
     // 驗證 userId 是否存在
     const userExists = await pool.query(checkUserQuery, [createdBy]);
@@ -103,8 +105,7 @@ export const updateDesign: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  // validateDesignId 與 validateDesignExists middleware 已經處理過 designId 驗證
-  const designId = (req as any).designId;
+  const designId = req.params.designId as unknown as number;
 
   const { name, description, data } = req.body;
 
@@ -127,10 +128,9 @@ export const softDeleteDesign: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  const designId = (req as any).designId;
+  const designId = req.params.designId as unknown as number;
 
   try {
-    // validateDesignId 與 validateDesignExists middleware 已經處理過 designId 驗證
     const result = await pool.query(softDeleteDesignQuery, [designId]);
 
     res.status(201).json(result.rows[0]);

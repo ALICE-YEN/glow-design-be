@@ -35,11 +35,6 @@ export function generateUpdateDesignQuery(
     paramIndex++;
   }
 
-  // 沒有提供任何欄位就回報錯誤
-  if (fields.length === 0) {
-    throw new Error("No update fields provided");
-  }
-
   // 自動更新 updated_at
   fields.push(`updated_at = NOW()`);
 

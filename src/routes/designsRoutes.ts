@@ -1,4 +1,10 @@
 import { Router } from "express";
+import { validate } from "../middlewares/validate";
+import {
+  designIdParamsSchema,
+  createDesignSchema,
+  updateDesignSchema,
+} from "../schemas/designs.schema";
 import {
   getDesign,
   getDesignsByUser,
@@ -6,26 +12,21 @@ import {
   updateDesign,
   softDeleteDesign,
 } from "../controllers/designsController";
-import {
-  validateDesignId,
-  validateDesignExists,
-} from "../middlewares/designsValidation";
 
 const router = Router();
 
-router.get("/:designId", validateDesignId, validateDesignExists, getDesign);
+router.get("/:designId", validate(designIdParamsSchema, "params"), getDesign);
 router.get("/user/:userId", getDesignsByUser);
-router.post("/", createDesign);
+router.post("/", validate(createDesignSchema), createDesign);
 router.patch(
   "/:designId",
-  validateDesignId,
-  validateDesignExists,
+  validate(designIdParamsSchema, "params"),
+  validate(updateDesignSchema),
   updateDesign
 );
 router.delete(
   "/:designId",
-  validateDesignId,
-  validateDesignExists,
+  validate(designIdParamsSchema, "params"),
   softDeleteDesign
 );
 
