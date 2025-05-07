@@ -1,6 +1,5 @@
 import { Request, Response, RequestHandler, NextFunction } from "express";
 import { pool } from "../config/db";
-import { AppError } from "../utils/AppError";
 import {
   getMaterialListQuery,
   getMaterialTypesQuery,
@@ -49,10 +48,6 @@ export const getMaterialsByType: RequestHandler = async (
   const { materialTypeId } = req.params;
 
   try {
-    if (!materialTypeId || isNaN(Number(materialTypeId))) {
-      return next(new AppError("ERR_MISSING_FIELDS", 400));
-    }
-
     const result = await pool.query(getMaterialsByTypeQuery, [materialTypeId]);
     res.status(200).json({ data: result.rows, count: result.rowCount });
   } catch (error) {
@@ -68,10 +63,6 @@ export const getCategoriesByType: RequestHandler = async (
   const { materialTypeId } = req.params;
 
   try {
-    if (!materialTypeId || isNaN(Number(materialTypeId))) {
-      return next(new AppError("ERR_MISSING_FIELDS", 400));
-    }
-
     const result = await pool.query(getCategoriesByTypeQuery, [materialTypeId]);
 
     const organizedCategories = organizeCategories(result.rows);
@@ -91,10 +82,6 @@ export const getMaterialsByCategory: RequestHandler = async (
   const includeSubcategories = req.query.include_subcategories === "true";
 
   try {
-    if (!categoryId || isNaN(Number(categoryId))) {
-      return next(new AppError("ERR_MISSING_FIELDS", 400));
-    }
-
     const query = includeSubcategories
       ? getCategoryWithSubcategoriesMaterialsQuery
       : getCategoryMaterialsQuery;
