@@ -7,6 +7,13 @@ export const designIdParamsSchema = z.object({
     .transform((val) => parseInt(val, 10)), // 轉換為數字
 });
 
+export const userIdParamsSchema = z.object({
+  userId: z
+    .string()
+    .regex(/^[0-9]+$/, "使用者 ID 必須為數字")
+    .transform((val) => parseInt(val, 10)),
+});
+
 export const createDesignSchema = z.object({
   name: z.string().min(1, "設計名稱不可為空"),
   description: z.string().min(1, "描述不可為空"),

@@ -1,6 +1,6 @@
 import { Request, Response, RequestHandler, NextFunction } from "express";
 import { pool } from "../config/db";
-import { AppError } from "../utils/AppError";
+import { AppError } from "../utils/appError";
 import { parseSortParams } from "../services/designs/parseSortParams";
 import { generateUpdateDesignQuery } from "../services/designs/generateUpdateQuery";
 import {
@@ -21,7 +21,9 @@ export const getDesign: RequestHandler = async (
   try {
     const result = await pool.query(getDesignQuery, [designId]);
     if (result.rowCount === 0) {
-      return next(new AppError("ERR_RESOURCE_NOT_FOUND", 404));
+      return next(
+        new AppError("ERR_RESOURCE_NOT_FOUND", 404, "Design not found")
+      );
     }
     res.status(200).json(result.rows[0]);
   } catch (error) {
@@ -43,17 +45,13 @@ export const getDesignsByUser: RequestHandler = async (
   // 動態組合 ORDER BY 子句：PostgreSQL 的參數化查詢（prepared statements）設計時只允許參數替換那些被視為文字值的部分，而不是 SQL 語法中的結構性元素，例如表名、欄位名稱或關鍵字。
   const orderByClause = `ORDER BY ${sortBy} ${sortOrder}`;
 
-  //  驗證 userId 是否為數字
-  const userId = parseInt(req.params.userId, 10);
-  if (isNaN(userId)) {
-    return next(new AppError("ERR_INVALID_USERID", 500));
-  }
+  const userId = req.params.userId as unknown as number;
 
   try {
     // 驗證 userId 是否存在
     const userExists = await pool.query(checkUserQuery, [userId]);
     if (userExists.rowCount === 0) {
-      return next(new AppError("ERR_USER_NOT_FOUND", 401));
+      return next(new AppError("ERR_USER_NOT_FOUND", 401, "User not found"));
     }
 
     const fullQuery = getDesignsByUserQuery + " " + orderByClause;
@@ -83,7 +81,7 @@ export const createDesign: RequestHandler = async (
     // 驗證 userId 是否存在
     const userExists = await pool.query(checkUserQuery, [createdBy]);
     if (userExists.rowCount === 0) {
-      return next(new AppError("ERR_USER_NOT_FOUND", 500));
+      return next(new AppError("ERR_USER_NOT_FOUND", 500, "User not found"));
     }
 
     const result = await pool.query(createDesignQuery, [

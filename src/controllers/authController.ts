@@ -2,7 +2,7 @@ import { Request, Response, RequestHandler, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../config/db";
-import { AppError } from "../utils/AppError";
+import { AppError } from "../utils/appError";
 import {
   insertUserQuery,
   checkEmailQuery,
@@ -25,7 +25,7 @@ export const register: RequestHandler = async (
     // Check if the email already exists
     const emailExists = await pool.query(checkEmailQuery, [email]);
     if ((emailExists?.rowCount ?? 0) > 0) {
-      throw new AppError("ERR_EMAIL_EXISTS", 400);
+      throw new AppError("ERR_EMAIL_EXISTS", 400, "Email already exists");
     }
 
     // Hash the password and insert the user
@@ -38,7 +38,7 @@ export const register: RequestHandler = async (
     res.status(201).json(result.rows[0]);
   } catch (error) {
     if ((error as any).code === "23505") {
-      next(new AppError("ERR_EMAIL_EXISTS", 400));
+      next(new AppError("ERR_EMAIL_EXISTS", 400, "Email already exists"));
       return;
     }
     // Pass all other errors to errorMiddleware for centralized handling
@@ -56,14 +56,14 @@ export const login: RequestHandler = async (
   try {
     const result = await pool.query(loginQuery, [email]);
     if (result.rowCount === 0) {
-      throw new AppError("ERR_INVALID_CREDENTIALS", 401);
+      throw new AppError("ERR_INVALID_CREDENTIALS", 401, "Invalid email");
     }
     const user = result.rows[0];
 
     // Verify the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new AppError("ERR_INVALID_CREDENTIALS", 401);
+      throw new AppError("ERR_INVALID_CREDENTIALS", 401, "Invalid password");
     }
 
     // Generate a JWT token
@@ -104,7 +104,7 @@ export const googleSsoHandler: RequestHandler = async (
 
     if (user) {
       if (user.sso_id !== ssoId) {
-        throw new AppError("ERR_EMAIL_EXISTS", 400);
+        throw new AppError("ERR_EMAIL_EXISTS", 400, '"Email already exists");');
       }
       // Login
     } else {

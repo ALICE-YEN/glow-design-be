@@ -2,6 +2,7 @@ import { Router } from "express";
 import { validate } from "../middlewares/validate";
 import {
   designIdParamsSchema,
+  userIdParamsSchema,
   createDesignSchema,
   updateDesignSchema,
 } from "../schemas/designs.schema";
@@ -16,7 +17,11 @@ import {
 const router = Router();
 
 router.get("/:designId", validate(designIdParamsSchema, "params"), getDesign);
-router.get("/user/:userId", getDesignsByUser);
+router.get(
+  "/user/:userId",
+  validate(userIdParamsSchema, "params"),
+  getDesignsByUser
+);
 router.post("/", validate(createDesignSchema), createDesign);
 router.patch(
   "/:designId",

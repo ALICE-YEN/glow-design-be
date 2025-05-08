@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { ZodSchema } from "zod";
+import { AppError } from "../utils/appError";
+import { formatZodError } from "../utils/formatZodError";
 
 export const validate = (
   schema: ZodSchema,
@@ -9,11 +11,14 @@ export const validate = (
     const result = schema.safeParse(req[source]);
 
     if (!result.success) {
-      res.status(400).json({
-        error: "Invalid input",
-        details: result.error.flatten(),
-      });
-      return;
+      return next(
+        new AppError(
+          "ERR_VALIDATION",
+          400,
+          "輸入資料格式錯誤",
+          formatZodError(result.error)
+        )
+      );
     }
 
     req[source] = result.data;
