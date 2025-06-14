@@ -3,7 +3,7 @@ import { ZodSchema } from "zod";
 import { AppError } from "../utils/appError";
 import { formatZodError } from "../utils/formatZodError";
 
-export const validate = (
+const validate = (
   schema: ZodSchema,
   source: "body" | "query" | "params" = "body"
 ): RequestHandler => {
@@ -25,3 +25,5 @@ export const validate = (
     next();
   };
 };
+
+export default validate;
