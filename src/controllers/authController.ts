@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../config/db";
 import { AppError } from "../utils/appError";
+import { JWT_SECRET_KEY } from "../utils/constants";
 import {
   insertUserQuery,
   checkEmailQuery,
@@ -10,8 +11,6 @@ import {
   insertGoogleUserQuery,
   findUserBySsoOrEmailQuery,
 } from "../queries/authQueries";
-
-const secretKey = process.env.JWT_SECRET || "your_jwt_secret";
 
 export const register: RequestHandler = async (
   req: Request,
@@ -67,13 +66,13 @@ export const login: RequestHandler = async (
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_KEY, {
       expiresIn: "1h", // Token expiration time
     });
 
     const refreshToken = jwt.sign(
       { id: user.id, email: user.email },
-      secretKey,
+      JWT_SECRET_KEY,
       { expiresIn: "7d" } // Refresh Token 有效 7 天
     );
 
@@ -118,13 +117,13 @@ export const googleSsoHandler: RequestHandler = async (
       console.log("user2", user);
     }
     // Generate a JWT token
-    const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_KEY, {
       expiresIn: "1h",
     });
 
     const refreshToken = jwt.sign(
       { id: user.id, email: user.email },
-      secretKey,
+      JWT_SECRET_KEY,
       { expiresIn: "7d" } // Refresh Token 有效 7 天
     );
 
