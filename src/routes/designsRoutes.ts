@@ -1,6 +1,7 @@
 import { Router } from "express";
 import validate from "../middlewares/validate";
 import authenticateToken from "../middlewares/authenticateToken";
+import checkUserExistsInDb from "../middlewares/checkUserExistsInDb";
 import {
   designIdParamsSchema,
   userIdParamsSchema,
@@ -27,9 +28,16 @@ router.get(
   "/user/:userId",
   authenticateToken,
   validate(userIdParamsSchema, "params"),
+  checkUserExistsInDb((req) => Number(req.params.userId)),
   getDesignsByUser
 );
-router.post("/", authenticateToken, validate(createDesignSchema), createDesign);
+router.post(
+  "/",
+  authenticateToken,
+  validate(createDesignSchema),
+  checkUserExistsInDb((req) => req.user?.id),
+  createDesign
+);
 router.patch(
   "/:designId",
   authenticateToken,

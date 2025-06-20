@@ -3,9 +3,9 @@ import { pool } from "../config/db";
 import { AppError } from "../utils/appError";
 import { parseSortParams } from "../services/designs/parseSortParams";
 import { generateUpdateDesignQuery } from "../services/designs/generateUpdateQuery";
+import type { AuthenticatedRequest } from "../types/interface";
 import {
   getDesignQuery,
-  checkUserQuery,
   getDesignsByUserQuery,
   createDesignQuery,
   softDeleteDesignQuery,
@@ -48,11 +48,7 @@ export const getDesignsByUser: RequestHandler = async (
   const userId = req.params.userId as unknown as number;
 
   try {
-    // 驗證 userId 是否存在
-    const userExists = await pool.query(checkUserQuery, [userId]);
-    if (userExists.rowCount === 0) {
-      return next(new AppError("ERR_USER_NOT_FOUND", 401, "User not found"));
-    }
+    // middleware checkUserExistsInDb 已驗證 createdBy 確實存在於 DB
 
     const fullQuery = getDesignsByUserQuery + " " + orderByClause;
     const result = await pool.query(fullQuery, [userId]);
@@ -63,26 +59,22 @@ export const getDesignsByUser: RequestHandler = async (
   }
 };
 
-export const createDesign: RequestHandler = async (
-  req: Request,
+export const createDesign = async (
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
-  // 安全性考量：userId 不應來自 req.body，應該來自 JWT 或 session 驗證的 req.user.id，以防止惡意用戶偽造 userId。
-  // const createdBy = req.user?.id; // 這應該從 JWT 或 session 驗證來
-  const createdBy = 1;
-  // if (!createdBy) {
-  //   return next(new AppError("ERR_UNAUTHORIZED", 401));
-  // }
+  const createdBy = req.user?.id; // 從 JWT authenticateToken 驗證來
+  if (!createdBy) {
+    return next(
+      new AppError("ERR_UNAUTHORIZED", 401, "User authentication failed")
+    );
+  }
 
   const { name, description, data } = req.body;
 
   try {
-    // 驗證 userId 是否存在
-    const userExists = await pool.query(checkUserQuery, [createdBy]);
-    if (userExists.rowCount === 0) {
-      return next(new AppError("ERR_USER_NOT_FOUND", 500, "User not found"));
-    }
+    // middleware checkUserExistsInDb 已驗證 createdBy 確實存在於 DB
 
     const result = await pool.query(createDesignQuery, [
       name,

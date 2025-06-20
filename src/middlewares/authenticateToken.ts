@@ -1,19 +1,8 @@
-import { Request, Response, NextFunction, RequestHandler } from "express";
+import { Response, NextFunction, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { AppError } from "../utils/appError";
 import { JWT_SECRET_KEY } from "../utils/constants";
-
-interface JwtPayload {
-  id: number;
-  email: string;
-  // jsonwebtoken 在驗證後會自動加上 iat, exp 等標準欄位
-  iat: number;
-  exp: number;
-}
-
-export interface AuthenticatedRequest extends Request {
-  user?: JwtPayload;
-}
+import type { AuthenticatedRequest, JwtPayload } from "../types/interface";
 
 const authenticateToken: RequestHandler = (
   req: AuthenticatedRequest,
