@@ -143,4 +143,30 @@ export const refreshToken: RequestHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  const { refreshToken } = req.body;
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_SECRET_KEY) as {
+      id: number;
+      email: string;
+    };
+
+    const newToken = jwt.sign(
+      { id: decoded.id, email: decoded.email },
+      JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
+    const newRefreshToken = jwt.sign(
+      { id: decoded.id, email: decoded.email },
+      JWT_SECRET_KEY,
+      { expiresIn: "7d" }
+    );
+    // TODO: 目前還未實踐舊 refreshToken 作廢，DB 或 Redis 儲存
+
+    res.status(200).json({ token: newToken, refreshToken: newRefreshToken });
+  } catch (error) {
+    next(error);
+  }
+};

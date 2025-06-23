@@ -31,7 +31,7 @@ const authenticateToken: RequestHandler = (
     next();
   } catch (error) {
     return next(
-      new AppError("ERR_INVALID_TOKEN", 401, "Token is invalid or has expired")
+      new AppError("ERR_INVALID_TOKEN", 401, "Token is invalid or has expired") // 可觸發 refresh token 流程
     );
   }
 };
