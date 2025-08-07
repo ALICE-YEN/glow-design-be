@@ -2,7 +2,8 @@ import { Request, Response, RequestHandler, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../config/db";
-import { AppError } from "../utils/AppError";
+import { AppError } from "../utils/appError";
+import { JWT_SECRET_KEY } from "../utils/constants";
 import {
   insertUserQuery,
   checkEmailQuery,
@@ -10,8 +11,6 @@ import {
   insertGoogleUserQuery,
   findUserBySsoOrEmailQuery,
 } from "../queries/authQueries";
-
-const secretKey = process.env.JWT_SECRET || "your_jwt_secret";
 
 export const register: RequestHandler = async (
   req: Request,
@@ -21,15 +20,11 @@ export const register: RequestHandler = async (
   const { username, email, password } = req.body;
 
   try {
-    if (!username || !email || !password) {
-      throw new AppError("ERR_MISSING_FIELDS", 400);
-    }
-
     // TODO: REDIS - Caching User Data for Fast Lookups、Redis can act as a fast lock to prevent duplicates during High Concurrency
     // Check if the email already exists
     const emailExists = await pool.query(checkEmailQuery, [email]);
     if ((emailExists?.rowCount ?? 0) > 0) {
-      throw new AppError("ERR_EMAIL_EXISTS", 400);
+      throw new AppError("ERR_EMAIL_EXISTS", 400, "Email already exists");
     }
 
     // Hash the password and insert the user
@@ -42,7 +37,7 @@ export const register: RequestHandler = async (
     res.status(201).json(result.rows[0]);
   } catch (error) {
     if ((error as any).code === "23505") {
-      next(new AppError("ERR_EMAIL_EXISTS", 400));
+      next(new AppError("ERR_EMAIL_EXISTS", 400, "Email already exists"));
       return;
     }
     // Pass all other errors to errorMiddleware for centralized handling
@@ -58,28 +53,32 @@ export const login: RequestHandler = async (
   const { email, password } = req.body;
 
   try {
-    if (!email || !password) {
-      throw new AppError("ERR_MISSING_FIELDS", 400);
-    }
     const result = await pool.query(loginQuery, [email]);
     if (result.rowCount === 0) {
-      throw new AppError("ERR_INVALID_CREDENTIALS", 401);
+      throw new AppError("ERR_INVALID_CREDENTIALS", 401, "Invalid email");
     }
     const user = result.rows[0];
 
     // Verify the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new AppError("ERR_INVALID_CREDENTIALS", 401);
+      throw new AppError("ERR_INVALID_CREDENTIALS", 401, "Invalid password");
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_KEY, {
       expiresIn: "1h", // Token expiration time
     });
 
+    const refreshToken = jwt.sign(
+      { id: user.id, email: user.email },
+      JWT_SECRET_KEY,
+      { expiresIn: "7d" } // Refresh Token 有效 7 天
+    );
+
     res.status(200).json({
       token,
+      refreshToken,
       id: user.id,
       username: user.username,
       email: user.email,
@@ -97,10 +96,6 @@ export const googleSsoHandler: RequestHandler = async (
   const { username, email, ssoId } = req.body;
 
   try {
-    if (!username || !email || !ssoId) {
-      throw new AppError("ERR_MISSING_FIELDS", 400);
-    }
-
     // Check if the user already exists in the database
     const result = await pool.query(findUserBySsoOrEmailQuery, [ssoId, email]);
     let user = result.rows[0];
@@ -108,7 +103,7 @@ export const googleSsoHandler: RequestHandler = async (
 
     if (user) {
       if (user.sso_id !== ssoId) {
-        throw new AppError("ERR_EMAIL_EXISTS", 400);
+        throw new AppError("ERR_EMAIL_EXISTS", 400, '"Email already exists");');
       }
       // Login
     } else {
@@ -122,16 +117,55 @@ export const googleSsoHandler: RequestHandler = async (
       console.log("user2", user);
     }
     // Generate a JWT token
-    const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
-      expiresIn: "1h", // Token expiration time
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_KEY, {
+      expiresIn: "1h",
     });
+
+    const refreshToken = jwt.sign(
+      { id: user.id, email: user.email },
+      JWT_SECRET_KEY,
+      { expiresIn: "7d" } // Refresh Token 有效 7 天
+    );
 
     res.status(200).json({
       token,
+      refreshToken,
       id: user.id,
       username: user.username,
       email: user.email,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refreshToken: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { refreshToken } = req.body;
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_SECRET_KEY) as {
+      id: number;
+      email: string;
+    };
+
+    const newToken = jwt.sign(
+      { id: decoded.id, email: decoded.email },
+      JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
+    const newRefreshToken = jwt.sign(
+      { id: decoded.id, email: decoded.email },
+      JWT_SECRET_KEY,
+      { expiresIn: "7d" }
+    );
+    // TODO: 目前還未實踐舊 refreshToken 作廢，DB 或 Redis 儲存
+
+    res.status(200).json({ token: newToken, refreshToken: newRefreshToken });
   } catch (error) {
     next(error);
   }

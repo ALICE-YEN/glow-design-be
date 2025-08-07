@@ -1,6 +1,5 @@
 import { Request, Response, RequestHandler, NextFunction } from "express";
 import { pool } from "../config/db";
-import { AppError } from "../utils/AppError";
 import {
   getMaterialListQuery,
   getMaterialTypesQuery,
@@ -12,7 +11,7 @@ import {
 import {
   organizeCategories,
   organizeMaterialsAndCategories,
-} from "../services/categoryService";
+} from "../services/materials/categoryService";
 
 export const getMaterialList: RequestHandler = async (
   req: Request,
@@ -37,7 +36,6 @@ export const getMaterialTypes: RequestHandler = async (
     const result = await pool.query(getMaterialTypesQuery);
     res.status(200).json(result.rows);
   } catch (error) {
-    // Pass all other errors to errorMiddleware for centralized handling
     next(error);
   }
 };
@@ -50,14 +48,9 @@ export const getMaterialsByType: RequestHandler = async (
   const { materialTypeId } = req.params;
 
   try {
-    if (!materialTypeId || isNaN(Number(materialTypeId))) {
-      return next(new AppError("ERR_MISSING_FIELDS", 400));
-    }
-
     const result = await pool.query(getMaterialsByTypeQuery, [materialTypeId]);
     res.status(200).json({ data: result.rows, count: result.rowCount });
   } catch (error) {
-    // Pass all other errors to errorMiddleware for centralized handling
     next(error);
   }
 };
@@ -70,17 +63,12 @@ export const getCategoriesByType: RequestHandler = async (
   const { materialTypeId } = req.params;
 
   try {
-    if (!materialTypeId || isNaN(Number(materialTypeId))) {
-      return next(new AppError("ERR_MISSING_FIELDS", 400));
-    }
-
     const result = await pool.query(getCategoriesByTypeQuery, [materialTypeId]);
 
     const organizedCategories = organizeCategories(result.rows);
 
     res.status(200).json(organizedCategories);
   } catch (error) {
-    // Pass all other errors to errorMiddleware for centralized handling
     next(error);
   }
 };
@@ -91,13 +79,9 @@ export const getMaterialsByCategory: RequestHandler = async (
   next: NextFunction
 ) => {
   const { categoryId } = req.params;
-  const includeSubcategories = req.query.includeSubcategories === "true";
+  const includeSubcategories = req.query.include_subcategories === "true";
 
   try {
-    if (!categoryId || isNaN(Number(categoryId))) {
-      return next(new AppError("ERR_MISSING_FIELDS", 400));
-    }
-
     const query = includeSubcategories
       ? getCategoryWithSubcategoriesMaterialsQuery
       : getCategoryMaterialsQuery;
@@ -108,7 +92,6 @@ export const getMaterialsByCategory: RequestHandler = async (
 
     res.status(200).json(organizedData);
   } catch (error) {
-    // Pass all other errors to errorMiddleware for centralized handling
     next(error);
   }
 };

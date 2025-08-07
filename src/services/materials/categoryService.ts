@@ -3,7 +3,7 @@ import type {
   ParentCategory,
   CategoryMaterialSQL,
   CategoryWithMaterials,
-} from "../types/interface";
+} from "../../types/interface";
 
 export const organizeCategories = (
   categories: Category[]

@@ -1,3 +1,5 @@
+import { Request } from "express";
+
 export interface Category {
   id: number;
   name: string;
@@ -28,4 +30,17 @@ export interface CategoryMaterialSQL {
 export interface CategoryWithMaterials extends Category {
   materials: Material[];
   subcategories: Category[];
+}
+
+// authenticateToken
+export interface JwtPayload {
+  id: number;
+  email: string;
+  // jsonwebtoken 在驗證後會自動加上 iat, exp 等標準欄位
+  iat: number;
+  exp: number;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: JwtPayload;
 }

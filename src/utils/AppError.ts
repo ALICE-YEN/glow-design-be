@@ -1,13 +1,18 @@
-// 感覺使用上跟 errorMap 沒有做結合，要再想一下
-import { ErrorCode } from "../utils/errorMap";
-
 export class AppError extends Error {
-  public code: ErrorCode;
-  public status: number;
+  statusCode: number;
+  code: string;
+  errors?: { field: string; message: string }[];
 
-  constructor(code: ErrorCode, status: number) {
-    super();
+  constructor(
+    code: string,
+    statusCode: number,
+    message: string,
+    errors?: { field: string; message: string }[]
+  ) {
+    super(message);
+    this.statusCode = statusCode;
     this.code = code;
-    this.status = status;
+    this.errors = errors;
+    Error.captureStackTrace(this, this.constructor); // 清理與重設錯誤堆疊追蹤（stack trace）起點為該類別本身
   }
 }

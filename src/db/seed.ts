@@ -1,3 +1,9 @@
+// Client：單一連線（Single Connection），你自己管理（connect / query / end），要手動結束連線，一次只能處理一個請求，沒特別快，用在測試、一次性的小工具（比如手動 seed）。
+// Pool：連線池（Connection Pool），自動幫你管（取用、回收連線），不一定要手動結束連線，Pool 自己管理，只需要 release()，高併發時表現佳，可以同時處理很多 query，用在正式後端服務（高併發 API server）。
+
+// 只要 seed script 是單獨跑一個 node process（例如 node seed.ts），就不會影響你的 server (Express) 正在跑的 pool。
+// 因為 seed 跟你的 server 是不同的 process，是不同的記憶體空間、不同的 pool instance，互不干擾。
+
 import { pool } from "../config/db";
 
 const seedDatabase = async () => {
@@ -179,7 +185,8 @@ const seedDatabase = async () => {
   } catch (err) {
     console.error("Error seeding database:", err);
   } finally {
-    await pool.end(); // Close the connection
+    await pool.end();
+    // 因為 Pool 本質上就是開著一組連線池，pool.query 是從池子裡借一條連線來用，所以 script 執行完要結束這個池子，才不會讓 node process 卡著（一直沒結束）。
   }
 };
 
